@@ -1,0 +1,36 @@
+Package: ubba
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Author: Who wrote it
+Maintainer: Nate Matteson <natem@scripps.edu>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+Imports:
+    aroma.light,
+    Biobase,
+    BiocGenerics,
+    ggplot2,
+    dplyr,
+    glue,
+    limSolve,
+    magrittr,
+    Matrix,
+    methods,
+    purrr,
+    reshape2,
+    SingleCellExperiment,
+    testthat,
+    tibble,
+    tidyr,
+    scater (>= 1.8),
+    scran,
+    stats,
+    KernSmooth
+Suggests:
+    cowplot,
+    graphics,
+     grDevices
