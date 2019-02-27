@@ -7,18 +7,19 @@ library( dplyr )
 #' @param has_spike Does this contain spike-ins, for which the feature names are preseded by ERCC
 #' @param verbose Whether to add plots
 #' @param nmads Number of median deviations for filtering outlier cells
+#' @param min_expression Minimum library size for a cell
 #' @param min_ave_expression Minimal average expression of a feature
+#' @param min_cell Minimum cells a gene must be expressed in.
 #' @param hvg_fdr FDR feature filtering cutoff
 #' @param hvg_bio Biological feature filtering cutoff
 #' @param min_variable_fraction Minimal number of variable features to retain
-
 normalise_filter_counts <- function(
     sce.object,
     filter_cells=TRUE,
     filter_features=TRUE,
     filter_hvg=TRUE,
     normalisation="scran_size_factors",
-    has_spike=any( grepl( "^ERCC-", rownames( counts ) ) ),
+    has_spike=any( grepl( "^ERCC-", rownames( sce.object ) ) ),
     verbose=TRUE,
     nmads=3,
     min_expression=200,
@@ -142,6 +143,10 @@ normalise_filter_counts <- function(
 
         sce.object <- sce.object[keep,]
 
+        # Get rid of duplicated features because we're working with symbols. Ideally, we'd
+        # rename but I don't know how to do that.
+        sce.object <- sce.object[ !duplicated( rownames( sce.object ) ),]
+
         if( verbose ) {
             normalisation_plots$ave_counts <- tibble::tibble( ave_counts=ave_counts ) %>%
                 ggplot2::ggplot() +
@@ -171,9 +176,6 @@ normalise_filter_counts <- function(
             print( glue::glue( "Feature filter: features - {nrow(sce.object)} Cells - {ncol(sce.object)}" ) )
         }
     }
-
-
-
 
     ## Normalise ----------------------------------------------------------------------------
     if( normalisation == "scran_size_factors" ) {
@@ -296,6 +298,3 @@ normalise_filter_counts <- function(
                    has_mito,
                    normalisation_steps ) )
 }
-
-#pbmc8k <- DropletUtils::read10xCounts( "/Users/natem/codeSandbox/tcr/0_data/pbmc8k/GRCh38", type="sparse", col.names=TRUE )
-
