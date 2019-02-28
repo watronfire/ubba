@@ -6,7 +6,7 @@ library( dplyr )
 #' @param features Features to include in featuresplot. Will plot expression across reduced dimensional space.
 #' @param plot_reduction Which dimensionality reduction to use for feature plots. Available options are PCA, TSNE, and UMAP.
 #' @param verbose Whether to add plots, print progress, etc.
-basic_cluster <- function( 
+basic_cluster <- function(
     sce.object,
     n_dimreds=ncol( SingleCellExperiment::reducedDim( sce.object, "PCA" ) ),
     resolution=1.0,
@@ -17,35 +17,50 @@ basic_cluster <- function(
 ) {
     set.seed( 42 )
     cluster_plots <- list()
-    
+
     ## Clustering -----------------------------------------------------------------------
     se.object <- Seurat::as.Seurat( sce.object )
     se.object <- Seurat::FindNeighbors( object=se.object, reduction="PCA", dims=1:n_dimreds, do.plot=FALSE )
     se.object <- Seurat::FindClusters( object=se.object, resolution=resolution, random.seed=42, verbose=verbose )
-    
+
     if( verbose ) {
-        cluster_plots$basic_clusters <- Seurat::DimPlot( object=se.object, pt.size=1, label=TRUE, reduction=plot_reduction ) + 
+        cluster_plots$basic_clusters <- Seurat::DimPlot( object=se.object, pt.size=1, label=TRUE, reduction=plot_reduction ) +
             ggplot2::ggtitle( label=paste( "Clusters at resolution:", resolution ) )
-        cluster_plots$features <- Seurat::FeaturePlot( object=se.object, features=features, reduction=plot_reduction ) + 
+        cluster_plots$features <- Seurat::FeaturePlot( object=se.object, features=features, reduction=plot_reduction ) +
             ggplot2::ggtitle( label="Common PMBC feature expression" )
     }
-    
+
     # Assign clusters from Seurat object to SingleCellExperiment object
     SummarizedExperiment::colData( sce.object )$cluster <- se.object@active.ident
-    
+
     ## Differential Expression ----------------------------------------------------------
+    Seurat::Idents( se.object ) <- se.object$RNA_snn_res.1.3
     markers <- Seurat::FindAllMarkers( object=se.object, only.pos=TRUE, verbose=verbose )
-    
+
     # Could perhaps rename clusters based on most differentially expressed gene. Who knows?
-    
+
     if( verbose ) {
         top_de_features <- markers %>% group_by( cluster ) %>% top_n( n = 1, wt = avg_logFC )
         cluster_plots$de_feature_plot <- Seurat::FeaturePlot( object=se.object, features=top_de_features$gene, reduction=plot_reduction )
+
+        for( i in seq( 0.1, 2.0, 0.1 ) ) {
+            se.object <- Seurat::FindClusters( object=se.object, resolution=i, random.seed=42, verbose=TRUE )
+        }
+
+        p1 <- Seurat::DimPlot( se.object, reduction="UMAP", label=TRUE, pt.size=1 ) + ggplot2::theme( legend.position="none" )
+
+        p2 <- se.object@meta.data %>%
+            select( starts_with( "RNA_snn_res." ) ) %>%
+            clustree::clustree( prefix="RNA_snn_res.", return="plot" ) +
+            ggplot2::theme( legend.position="none" )
+
+        cluster_plots$cluster_stability <- scater::multiplot( p1, p2, cols=2 )
     }
-    
-    lst( data=sce.object, 
-         cluster_plots, 
-         info=lst( clusters=se.object@active.ident, 
+
+    lst( data=sce.object,
+         cluster_plots,
+         seurat.obj=se.object,
+         info=lst( clusters=se.object@active.ident,
                    markers=markers ) )
 }
 
