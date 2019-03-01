@@ -1,4 +1,3 @@
-library( dplyr )
 #' @param sce.object The SingleCellExperiment object
 #' @param n_dimreds How many PCs to use for further dimensionality reduction. Defauls to all available.
 #' @param resolution Value of the resolution parameter for clustering, use a value above 1.0 if you want to obtain a larger number of communities, or vice-versa.
@@ -54,7 +53,7 @@ basic_cluster <- function(
             clustree::clustree( prefix="RNA_snn_res.", return="plot" ) +
             ggplot2::theme( legend.position="none" )
 
-        cluster_plots$cluster_stability <- scater::multiplot( p1, p2, cols=2 )
+        cluster_plots$cluster_stability <- p2
     }
 
     lst( data=sce.object,

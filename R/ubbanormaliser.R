@@ -1,4 +1,3 @@
-library( dplyr )
 #' @param sce.object The SingleCellExperiment object
 #' @param filter_cells Whether the cells have to be filtered
 #' @param filter_features Whether the features have to be filtered

@@ -1,4 +1,3 @@
-library( dplyr )
 #' @param sce.object The SingleCellExperiment object
 #' @param on_hvg Whether to perform dimensionality reduction on highly variable features or all features
 #' @param has_spike Does this contain spike-ins, for which the feature names are preseded by ERCC
@@ -32,7 +31,7 @@ dimensionality_reduction <- function(
     }
 
     # Pretty standard, eh?
-    sce.object <- scater::runPCA( sce.object, ncomponents=50, feature_set=top.hvg, set.seed=42 )
+    sce.object <- scater::runPCA( sce.object, ncomponents=50, feature_set=top.hvg, set.seed=42, method="irlba" )
 
     if( verbose ) {
         dimred_plots$pca <- scater::plotPCA( sce.object, add_ticks=FALSE ) + ggplot2::ggtitle( label="PCA Normalized Gene Counts" )
