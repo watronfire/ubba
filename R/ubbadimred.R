@@ -27,7 +27,7 @@ dimensionality_reduction <- function(
             top.hvg <- order( var.out$bio, decreasing=TRUE )
         }
     } else {
-        top.hvg <- rownames( sce.out$data )
+        top.hvg <- rownames( sce.object$data )
     }
 
     # Pretty standard, eh?
